@@ -1,25 +1,25 @@
 const mongoose = require("mongoose");
 
-const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 5000;
+let isConnected = false;
 
-const connectDB = async (retryCount = 0) => {
+const connectDB = async () => {
+  if (isConnected) {
+    console.log("Using existing MongoDB connection");
+    return;
+  }
+
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
+    const db = await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 10000,
     });
+    
+    isConnected = db.connections[0].readyState;
     console.log("MongoDB connected successfully");
   } catch (error) {
-    console.error(`MongoDB connection failed (attempt ${retryCount + 1}/${MAX_RETRIES}):`);
+    console.error("MongoDB connection failed:");
     console.error(error.message);
-
-    if (retryCount + 1 < MAX_RETRIES) {
-      console.log(`Retrying in ${RETRY_DELAY_MS / 1000}s...`);
-      setTimeout(() => connectDB(retryCount + 1), RETRY_DELAY_MS);
-    } else {
-      console.error("Max retries reached. Exiting.");
-      process.exit(1);
-    }
+    // In serverless, we don't want to process.exit(1) as it crashes the function instance.
+    // We let the next request try again instead.
   }
 };
 
