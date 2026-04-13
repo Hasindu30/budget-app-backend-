@@ -17,6 +17,6 @@ router.post('/login', loginUser);
 router.post('/reset-password', resetPassword);
 router.get('/me', protect, getMe);
 router.put('/update-me', protect, updateMe);
-router.put('/update-profile-image', protect, upload.single('profileImage'), updateProfileImage);
+// router.put('/update-profile-image', protect, upload.single('profileImage'), updateProfileImage);
 
 module.exports = router;
